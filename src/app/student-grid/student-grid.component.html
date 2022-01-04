@@ -1,0 +1,102 @@
+<h1>Student Management System</h1>
+<form
+  [formGroup]="myForm"
+  novalidate
+  (ngSubmit)="save()"
+  >
+  <kendo-fileselect
+  formControlName="files"
+  [multiple]="false"
+  [restrictions]="myRestrictions"
+  (remove)="remove()"
+  (valueChange)="valueChange($event)">
+  </kendo-fileselect>
+  <p
+    style="color: red; font-size: .8em; margin-top: .5em;"
+    [hidden]="
+      myForm.controls.files.valid ||
+      (myForm.controls.files.pristine)
+    "
+  >
+    Selecting a file is required.
+  </p>
+  <button type="submit" class="k-button k-primary" style="margin: 1em 0;" [disabled]="!myForm.valid || submitted">
+    Submit
+  </button>
+</form>
+
+<kendo-grid
+  [data]="view"
+  [pageSize]="gridState.take!"
+  [skip]="gridState.skip!"
+  [sort]="gridState.sort!"
+  [pageable]="true"
+  [sortable]="true"
+  (dataStateChange)="onStateChange($event)"
+  (edit)="editHandler($event)"
+  (cancel)="cancelHandler($event)"
+  (save)="saveHandler($event)"
+  (remove)="removeHandler($event)"
+  (add)="addHandler($event)"
+  [navigable]="true">
+  <ng-template kendoGridToolbarTemplate>
+    <button kendoGridAddCommand>Add new</button>
+  </ng-template>
+  <kendo-grid-column field="id" title="ID"> </kendo-grid-column>
+  <kendo-grid-column field="name" title="Name"> </kendo-grid-column>
+  <kendo-grid-column field="gender" title="Gender">
+    <ng-template kendoGridCellTemplate let-dataItem>
+      {{dataItem.gender}}
+    </ng-template>
+    <ng-template kendoGridEditTemplate
+      let-dataItem="dataItem"
+      let-column="column"
+      let-formGroup="formGroup">
+      <kendo-dropdownlist
+        [data]="genderList"
+        [value] = "dataItem.gender"
+        [valuePrimitive]="true"
+        [formControl]="formGroup.get('gender')"
+      >
+      </kendo-dropdownlist>
+    </ng-template>
+  </kendo-grid-column>
+  <kendo-grid-column field="address" title="Address"> </kendo-grid-column>
+  <kendo-grid-column field="mobile_no" title="Mobile No"> </kendo-grid-column>
+  <kendo-grid-column field="dob" editor="date" title="Date of Birth">
+    <ng-template kendoGridCellTemplate let-dataItem>
+      {{dataItem.dob | date: 'EEE MMM d y'}}
+    </ng-template>
+    <ng-template kendoGridEditTemplate [formGroup]="formGroup"
+      let-dataItem="dataItem">
+      <kendo-datepicker [disabledDates]="disabledDates" formControlName="dob">
+    </kendo-datepicker>
+    </ng-template>
+  </kendo-grid-column>
+  <kendo-grid-column field="age" title="Age"> </kendo-grid-column>
+  <kendo-grid-command-column title="Command">
+    <ng-template kendoGridCellTemplate let-isNew="isNew">
+        <button kendoGridEditCommand [primary]="true">Edit</button>
+        <button kendoGridRemoveCommand>Remove</button>
+        <button kendoGridSaveCommand [disabled]="formGroup.invalid">{{ isNew ? 'Add' : 'Update' }}</button>
+        <button kendoGridCancelCommand>{{ isNew ? 'Discard changes' : 'Cancel' }}</button>
+    </ng-template>
+  </kendo-grid-command-column>
+</kendo-grid>
+
+<kendo-dialog *ngIf="openedRemoveDialog" (close)="onDialogClose()">
+  <kendo-dialog-titlebar>
+    <div style="font-size: 18px; line-height: 1.3em;">
+      <span class="k-icon k-i-warning"></span> Delete Data
+    </div>
+  </kendo-dialog-titlebar>
+  <p style="margin: 30px; text-align: center;">
+    This action cannot be undone.
+  </p>
+  <kendo-dialog-actions [layout]="actionsLayout">
+    <button kendoButton (click)="onDialogClose()">Cancel</button>
+    <button kendoButton (click)="onDeleteData()" [primary]="true">
+      Delete
+    </button>
+  </kendo-dialog-actions>
+</kendo-dialog>
